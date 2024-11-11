@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
@@ -39,39 +40,82 @@ public_users.post("/register", (req,res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  res.send(JSON.stringify(books,null,4))
+public_users.get('/', function (req, res) {
+  // Utilisation d'une promesse pour simuler un appel asynchrone
+  new Promise((resolve) => {
+    resolve(books);
+  })
+  .then((bookList) => {
+    res.send(JSON.stringify(bookList, null, 4));
+  })
+  .catch((error) => {
+    res.status(500).json({ message: "Error fetching book list", error });
+  });
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-  const isbn =  req.params.isbn
-  res.send(books[isbn])
- });
-  
+public_users.get('/isbn/:isbn', function (req, res) {
+  const isbn = req.params.isbn;
+
+  // Utilisation d'une promesse pour obtenir le livre par ISBN
+  new Promise((resolve, reject) => {
+    const book = books[isbn];
+    if (book) {
+      resolve(book);
+    } else {
+      reject("Book not found");
+    }
+  })
+  .then((book) => {
+    res.send(book);
+  })
+  .catch((error) => {
+    res.status(404).json({ message: error });
+  });
+});
+
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  const author =  req.params.author
+public_users.get('/author/:author', function (req, res) {
+  const author = req.params.author;
 
-  const BookByAuthor = Object.values(books).filter(book => book.author === author)
-
-  if (BookByAuthor.length >0){
-    res.send(BookByAuthor)
-
-  }
+  // Utilisation d'une promesse pour obtenir les livres par auteur
+  new Promise((resolve, reject) => {
+    const booksByAuthor = Object.values(books).filter(book => book.author === author);
+    if (booksByAuthor.length > 0) {
+      resolve(booksByAuthor);
+    } else {
+      reject("No books found by this author");
+    }
+  })
+  .then((booksByAuthor) => {
+    res.send(booksByAuthor);
+  })
+  .catch((error) => {
+    res.status(404).json({ message: error });
+  });
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  const title =  req.params.title
+public_users.get('/title/:title', function (req, res) {
+  const title = req.params.title;
 
-  const BookByTitle = Object.values(books).filter(book => book.title === title)
-
-   if(BookByTitle.length > 0){
-    res.send(BookByTitle)
-
-   }
+  // Utilisation d'une promesse pour obtenir les livres par titre
+  new Promise((resolve, reject) => {
+    const booksByTitle = Object.values(books).filter(book => book.title === title);
+    if (booksByTitle.length > 0) {
+      resolve(booksByTitle);
+    } else {
+      reject("No books found with this title");
+    }
+  })
+  .then((booksByTitle) => {
+    res.send(booksByTitle);
+  })
+  .catch((error) => {
+    res.status(404).json({ message: error });
+  });
 });
+
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
