@@ -39,19 +39,18 @@ public_users.post("/register", (req,res) => {
     return res.status(404).json({message: "Unable to register user."});
 });
 
-// Get the book list available in the shop
-public_users.get('/', function (req, res) {
-  // Utilisation d'une promesse pour simuler un appel asynchrone
-  new Promise((resolve) => {
-    resolve(books);
-  })
-  .then((bookList) => {
-    res.send(JSON.stringify(bookList, null, 4));
-  })
-  .catch((error) => {
-    res.status(500).json({ message: "Error fetching book list", error });
-  });
+// Get all books using an async callback function
+public_users.get('/', async function (req, res) {
+  try {
+    // Utiliser une fonction asynchrone pour renvoyer les livres
+    await new Promise((resolve) => {
+      resolve(res.send(JSON.stringify(books, null, 4)));
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving books", error: error.message });
+  }
 });
+
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn', function (req, res) {
